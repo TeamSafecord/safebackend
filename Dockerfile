@@ -17,4 +17,4 @@ RUN npm install -g typescript
 COPY . .
 
 #EXPOSE 8080
-CMD [ "yarn", "docker" ]
+CMD [ "yarn", "start" ]

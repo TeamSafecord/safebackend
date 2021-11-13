@@ -4,10 +4,7 @@
   "description": "backend",
   "main": "dist/index",
   "scripts": {
-    "build": "tsc",
-    "start": "node .",
-    "docker": "tsc && node .",
-    "test": "tsc && cd ./dist/ && node index.js"
+    "start": "tsc && cd ./dist/ && node index.js"
   },
   "repository": "https://github.com/TeamSafecord/safebackend.git",
   "author": "Neko <78627265+Nekoyre@users.noreply.github.com>",
