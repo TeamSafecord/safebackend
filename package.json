@@ -6,14 +6,18 @@
   "scripts": {
     "build": "tsc",
     "start": "node .",
-    "docker": "tsc && node ."
+    "docker": "tsc && node .",
+    "test": "tsc && cd ./dist/ && node index.js"
   },
   "repository": "https://github.com/TeamSafecord/safebackend.git",
   "author": "Neko <78627265+Nekoyre@users.noreply.github.com>",
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "fastify": "^3.23.1"
+    "canvas": "^2.8.0",
+    "captcha-canvas": "^3.1.0",
+    "fastify": "^3.23.1",
+    "skia-canvas": "^0.9.27"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
