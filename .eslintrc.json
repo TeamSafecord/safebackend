@@ -1,0 +1,18 @@
+{
+	"root": true,
+	"env": {
+		"node": true,
+		"es6": true
+	},
+	"plugins": ["@typescript-eslint"],
+	"parser": "@typescript-eslint/parser",
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "google"],
+	"rules": {
+		// Fuck Off
+		"require-jsdoc": "off",
+		// Overlapping errors
+		"@typescript-eslint/no-unused-vars": "off",
+		// Qol
+		"max-len": ["error", { "code": 100 }]
+	}
+}
