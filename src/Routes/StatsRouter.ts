@@ -1,5 +1,5 @@
 import {FastifyInstance} from 'fastify';
-import {bot, botPost} from '../Interfaces/bot';
+import {botPost} from '../Interfaces/bot';
 import * as mongoose from 'mongoose';
 
 export default async (server: FastifyInstance) => {
@@ -11,7 +11,7 @@ export default async (server: FastifyInstance) => {
   });
 
   const sModel = mongoose.model('stats', stats);
-  server.get<{Body: bot}>('/stats', async (request, reply) => {
+  server.get('/stats', async (request, reply) => {
     async function getStats() {
       try {
         const result = await sModel.find({
@@ -42,9 +42,8 @@ export default async (server: FastifyInstance) => {
   server.post<{Body: botPost}>('/stats', async (request, reply) => {
     if (request.headers.authorization === `163__0oursupersecurepassw0rd@*29::DAcX`) {
       try {
-        async function sendStats() {
-          try {
-            await sModel.findOneAndUpdate(
+        try {
+          await sModel.findOneAndUpdate(
               {
                 botID: '908904270978494514',
               },
@@ -55,13 +54,10 @@ export default async (server: FastifyInstance) => {
                 upsert: true,
                 new: true,
               },
-            );
-          } catch (error) {
-            console.trace(error);
-          }
+          );
+        } catch (error) {
+          console.trace(error);
         }
-
-        await sendStats();
 
         reply.send({
           statusCode: 200,
