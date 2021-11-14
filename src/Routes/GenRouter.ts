@@ -4,7 +4,7 @@ import {genCaptcha} from '../Interfaces/GenRouter';
 import {generateRandomString} from '../Utils/Generate';
 
 export default async (server: FastifyInstance) => {
-  server.post<{ Body: genCaptcha }>('/captcha', async (request, reply) => {
+  server.post<{Body: genCaptcha}>('/captcha', async (request, reply) => {
     const captchaText = generateRandomString(request.body?.difficulty ?? 6);
     const captchaGen = new CaptchaGenerator({height: 200, width: 600});
     captchaGen.setCaptcha({text: captchaText});
