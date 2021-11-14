@@ -24,4 +24,5 @@ server.listen(process.env.PORT ?? 3000, '0.0.0.0', async (err, address) => {
   }
 
   console.log(`Listening on ${address}`);
+  console.log(`Go to http://127.0.0.1:${process.env.PORT ?? 3000} to view it.`);
 });

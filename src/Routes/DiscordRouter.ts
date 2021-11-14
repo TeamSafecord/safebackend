@@ -52,11 +52,11 @@ export default async (server: FastifyInstance) => {
   }>('/redirect', async (request, reply) => {
     const session = request.cookies.session;
     const state = request.query.state?.toString();
+
     if (!session || !state || decodeURIComponent(session) !== decodeURIComponent(state)) {
       return reply.redirect(URL);
     }
-
-    const redirect = redirects.get(session);
+    const redirect = redirects.get(decodeURIComponent(session));
 
     if (!redirect) return reply.redirect(URL);
 
