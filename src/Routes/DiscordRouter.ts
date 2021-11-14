@@ -10,6 +10,10 @@ interface IQuerystring {
   code: string;
 }
 
+interface IAuthQuerystring {
+  redirect: string;
+}
+
 interface Details {
   [key: string]: string;
   client_id: string;
@@ -27,11 +31,17 @@ type TokenResponse = {
   token_type: string;
 };
 
+const redirects = new Map<string, string>();
+
 export default async (server: FastifyInstance) => {
-  server.get('/auth', async (request, reply) => {
+  server.get<{Querystring: IAuthQuerystring}>('/auth', async (request, reply) => {
     // Generate a cryptographically secure token and store it
     // in a cookie, then direct the user to discord
     const nonce = randomBytes(16).toString('base64');
+
+    redirects.set(nonce, request.query.redirect);
+
+    setTimeout(() => redirects.delete(request.query.redirect), 1000 * 60 * 5);
 
     reply.setCookie('session', encodeURIComponent(nonce), {path: '/'});
     reply.redirect(URL + `&state=${encodeURIComponent(nonce)}`);
@@ -45,6 +55,10 @@ export default async (server: FastifyInstance) => {
     if (!session || !state || decodeURIComponent(session) !== decodeURIComponent(state)) {
       return reply.redirect(URL);
     }
+
+    const redirect = redirects.get(session);
+
+    if (!redirect) return reply.redirect(URL);
 
     const code = request.query.code;
     if (!code) return reply.redirect(URL);
@@ -87,9 +101,15 @@ export default async (server: FastifyInstance) => {
     });
 
     await newSession.save();
-    reply.setCookie('access', nonce);
 
-    reply.redirect('https://safecord.xyz/');
+    // Set a cookie that expires in 2 hours
+    reply.setCookie('access', nonce, {
+      path: '/',
+      domain: 'https://safecord.xyz',
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
+    });
+
+    reply.redirect(`https://safecord.xyz${redirect}`);
   });
 };
 
