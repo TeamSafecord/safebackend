@@ -1,10 +1,9 @@
-import {fastify} from 'fastify';
 import fastifyAutoload from 'fastify-autoload';
-import {join} from 'path';
-import {config} from 'dotenv';
-config({path: '../.env'});
-import {connect} from 'mongoose';
 import fastifyCookie from 'fastify-cookie';
+import {connect} from 'mongoose';
+import fastify from 'fastify';
+import {join} from 'path';
+import 'dotenv/config';
 
 const server = fastify();
 
