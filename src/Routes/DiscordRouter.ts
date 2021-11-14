@@ -105,7 +105,7 @@ export default async (server: FastifyInstance) => {
     // Set a cookie that expires in 2 hours
     reply.setCookie('access', nonce, {
       path: '/',
-      domain: 'https://safecord.xyz',
+      domain: 'https://www.safecord.xyz',
       expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
     });
 
