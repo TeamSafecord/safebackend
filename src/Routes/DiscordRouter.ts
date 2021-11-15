@@ -13,6 +13,12 @@ interface IQuerystring {
 interface IAuthQuerystring {
   redirect: string;
 }
+interface Guild {
+  id: string;
+  name: string;
+  owner: boolean;
+  permissions: string;
+}
 
 interface Details {
   [key: string]: string;
@@ -118,15 +124,60 @@ export default async (server: FastifyInstance) => {
     const doc = await Session.findOne({nonce: token});
     if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
 
-    const res = await axios.get('https://discord.com/api/v9/users/@me', {
-      headers: {
-        'Authorization': `Bearer ${doc.accessToken}`,
-      },
-    }).catch(() => console.log('fuck eslint'));
+    const res = await axios
+        .get('https://discord.com/api/v9/users/@me', {
+          headers: {
+            Authorization: `Bearer ${doc.accessToken}`,
+          },
+        })
+        .catch(() => console.log('fuck eslint'));
 
     if (!res) return reply.status(401).send({error: 'Invalid Token!'});
 
     return reply.status(200).send(res.data);
+  });
+
+  server.get('/guilds', async (request, reply) => {
+    const token = request.cookies.access;
+
+    if (!token) return reply.status(404).send({error: 'Missing token!'});
+
+    const doc = await Session.findOne({nonce: token});
+    if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
+
+    const userGuilds = await axios
+        .get<Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+          headers: {
+            Authorization: `Bearer ${doc.accessToken}`,
+          },
+        })
+        .catch(() => console.warn('fuck eslint'));
+
+    const botGuilds = await axios
+        .get<Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+          headers: {
+            Authorization: `Bot ${process.env.BOT_TOKEN}`,
+          },
+        })
+        .catch(() => console.log('fuck eslint'));
+
+    if (!userGuilds) return reply.status(401).send({error: 'Invalid Token!'});
+    if (!botGuilds) return reply.status(500).send({error: 'Cannot fetch bot guilds!'});
+
+    const ids = botGuilds.data.map((g) => g.id);
+
+    const usableGuilds = userGuilds.data.filter(
+        (g) => (BigInt(g.permissions) & BigInt(1 << 5)) === BigInt(1 << 5),
+    );
+
+    const mutualGuilds = usableGuilds.filter((g) => ids.includes(g.id));
+    const rest = usableGuilds.filter((g) => !ids.includes(g.id));
+
+    doc.guilds = mutualGuilds;
+    doc.markModified('guilds');
+    await doc.save();
+
+    return reply.status(200).send({mutualGuilds, rest});
   });
 };
 
