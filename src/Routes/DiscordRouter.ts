@@ -101,7 +101,14 @@ export default async (server: FastifyInstance) => {
     });
 
     await newSession.save();
-    reply.redirect(`https://safecord.xyz${redirect}?access=${nonce}`);
+
+    reply.setCookie('access', nonce, {
+      domain: 'safecord.xyz',
+      secure: true,
+      sameSite: 'none',
+    });
+
+    reply.redirect(`https://safecord.xyz${redirect}`);
   });
 };
 
