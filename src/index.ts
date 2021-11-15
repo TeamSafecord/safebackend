@@ -22,6 +22,7 @@ server.register(fastifyCookie, {
 
 server.register(fastifyCors, {
   origin: 'https://www.safecord.xyz',
+  credentials: true,
 });
 
 server.listen(process.env.PORT ?? 3000, '0.0.0.0', async (err, address) => {
