@@ -101,15 +101,7 @@ export default async (server: FastifyInstance) => {
     });
 
     await newSession.save();
-
-    // Set a cookie that expires in 2 hours
-    reply.setCookie('access', nonce, {
-      path: '/',
-      domain: 'https://www.safecord.xyz',
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
-    });
-
-    reply.redirect(`https://safecord.xyz${redirect}`);
+    reply.redirect(`https://safecord.xyz${redirect}?access=${nonce}`);
   });
 };
 
