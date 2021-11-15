@@ -5,6 +5,7 @@ import {connect} from 'mongoose';
 import fastify from 'fastify';
 import {join} from 'path';
 import 'dotenv/config';
+import axios from 'axios';
 
 const server = fastify();
 
@@ -20,12 +21,23 @@ server.register(fastifyCookie, {
 });
 
 server.register(fastifyCors, {
-  origin: 'https://www.safecord.xyz',
+  origin: 'https://safecord.xyz',
 });
 
 server.listen(process.env.PORT ?? 3000, '0.0.0.0', async (err, address) => {
   if (err) {
     throw err;
+  }
+
+  if (process.env.MODE !== 'DEV') {
+    // eslint-disable-next-line
+    void axios.post('https://discord.com/api/webhooks/909681201500024832/eKlEapA_3mfKQzoV31qZnvR_VxxR4VRW1KiVkZrbD_WAkmXLE_uF76A_hAQK6SVpf5OE', {
+      content: 'Launched on server!',
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
   console.log(`Listening on ${address}`);
