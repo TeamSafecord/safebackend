@@ -50,7 +50,7 @@ export default async (server: FastifyInstance) => {
           }, {
             headers: {
               'Content-Type': 'application/json',
-              'authorization': 'qrtdrspZWv',
+              'authorization': process.env.BOT_API_KEY ?? 'qrtdrspZWv',
             },
           });
 
