@@ -56,9 +56,7 @@ export default async (server: FastifyInstance) => {
     if (!session || !state || decodeURIComponent(session) !== decodeURIComponent(state)) {
       return reply.redirect(URL);
     }
-    const redirect = redirects.get(decodeURIComponent(session));
-
-    if (!redirect) return reply.redirect(URL);
+    const redirect = redirects.get(decodeURIComponent(session)) || 'https://safecord.xyz/';
 
     const code = request.query.code;
     if (!code) return reply.redirect(URL);
