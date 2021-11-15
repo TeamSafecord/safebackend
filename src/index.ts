@@ -1,5 +1,6 @@
 import fastifyAutoload from 'fastify-autoload';
 import fastifyCookie from 'fastify-cookie';
+import fastifyCors from 'fastify-cors';
 import {connect} from 'mongoose';
 import fastify from 'fastify';
 import {join} from 'path';
@@ -16,6 +17,10 @@ server.register(fastifyAutoload, {
 
 server.register(fastifyCookie, {
   secret: process.env.COOKIE_SECRET, // for cookies signature
+});
+
+server.register(fastifyCors, {
+  origin: 'https://www.safecord.xyz',
 });
 
 server.listen(process.env.PORT ?? 3000, '0.0.0.0', async (err, address) => {
