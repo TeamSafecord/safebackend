@@ -106,9 +106,29 @@ export default async (server: FastifyInstance) => {
       domain: 'safecord.xyz',
       secure: true,
       sameSite: 'none',
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
     });
 
     reply.redirect(`https://safecord.xyz${redirect}`);
+  });
+
+  server.get('/user', async (request, reply) => {
+    const token = request.cookies.access;
+
+    if (!token) return reply.status(404).send({error: 'Missing token!'});
+
+    const doc = await Session.findOne({nonce: token});
+    if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
+
+    const res = await axios.get('https://discord.com/api/v9/users/@me', {
+      headers: {
+        'Authorization': `Bearer ${doc.accessToken}`,
+      },
+    }).catch(() => console.log('fuck eslint'));
+
+    if (!res) return reply.status(401).send({error: 'Invalid Token!'});
+
+    return reply.status(200).send(res.data);
   });
 };
 
