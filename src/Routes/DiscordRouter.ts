@@ -37,6 +37,10 @@ type TokenResponse = {
   token_type: string;
 };
 
+interface GuildId {
+  gid: string;
+}
+
 const redirects = new Map<string, string>();
 
 export default async (server: FastifyInstance) => {
@@ -178,6 +182,19 @@ export default async (server: FastifyInstance) => {
     await doc.save();
 
     return reply.status(200).send({mutualGuilds, rest});
+  });
+
+  server.get<{Params: GuildId}>('/guilds/:gid', async (request, res) => {
+    const guildId = request.params.gid;
+
+    if (!guildId) return res.status(500).send({error: 'Couldn\'t find guild id!'});
+
+    const guild = await axios.post('http://127.0.0.1:1337/bot/guild', {guild_id: guildId})
+        .catch(() => console.warn('fuck eslint'));
+
+    if (!guild) return res.status(404).send({error: 'Couldn\'t find that guild!'});
+
+    return res.status(200).send({guild: guild.data.guild});
   });
 };
 
