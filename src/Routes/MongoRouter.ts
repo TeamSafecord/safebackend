@@ -2,7 +2,7 @@ import {FastifyInstance} from 'fastify';
 import {guildParams} from '../Interfaces/MongoRouter';
 import {Guild} from '../Models/Guild';
 
-export default (fastify: FastifyInstance) => {
+export default async (fastify: FastifyInstance) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fastify.patch<{Params: guildParams; Body: any}>('/guild/:id', async (req, reply) => {
     if (req.headers['authorization'] !== process.env.API_KEY ?? '89aLG9EEsWKgTzZio1ZW') {
