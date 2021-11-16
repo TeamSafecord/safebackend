@@ -47,7 +47,7 @@ export default async (server: FastifyInstance) => {
           if (!guild) return reply.status(400).send({error: 'Guild not found'});
 
           const req = await axios.post(
-              'http://localhost:1337/bot/addRole',
+              'http://127.0.0.1:1337/bot/addRole',
               {
                 guild_id: request.body.guild_id,
                 user_id: request.body.user_id,
