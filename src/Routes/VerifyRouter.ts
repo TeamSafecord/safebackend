@@ -27,32 +27,39 @@ export default async (server: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const data = (await axios.post('https://hcaptcha.com/siteverify',
-            encodeURL({
-              secret: process.env.HCAPTCHA_SECRET,
-              response: request.body['h-captcha-response'],
-              hostname: 'safecord.xyz',
-            }),
-            {
-              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            }
-        )).data;
+        const data = (
+          await axios.post(
+              'https://hcaptcha.com/siteverify',
+              encodeURL({
+                secret: process.env.HCAPTCHA_SECRET,
+                response: request.body['h-captcha-response'],
+                hostname: 'safecord.xyz',
+              }),
+              {
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+              },
+          )
+        ).data;
 
         if (data.success) {
           const guild = await Guild.findOne({_id: request.body.guild_id});
 
           if (!guild) return reply.status(400).send({error: 'Guild not found'});
 
-          const req = await axios.post('http://localhost:1337/bot/addRole', {
-            guild_id: request.body.guild_id,
-            user_id: request.body.user_id,
-            role_id: guild.verificationRole,
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'authorization': process.env.BOT_API_KEY ?? 'qrtdrspZWv',
-            },
-          });
+          const req = await axios.post(
+              'http://172.18.0.2:1337/bot/addRole',
+              {
+                guild_id: request.body.guild_id,
+                user_id: request.body.user_id,
+                role_id: guild.verificationRole,
+              },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'authorization': process.env.BOT_API_KEY ?? 'qrtdrspZWv',
+                },
+              },
+          );
 
           if (req.data.statusCode == 200) {
             reply.status(200).send({success: true});
@@ -62,7 +69,7 @@ export default async (server: FastifyInstance) => {
         } else {
           return reply.status(400).send({error: 'Invalid captcha'});
         }
-      }
+      },
   );
 };
 
