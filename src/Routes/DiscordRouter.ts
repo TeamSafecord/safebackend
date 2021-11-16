@@ -189,7 +189,7 @@ export default async (server: FastifyInstance) => {
 
     if (!guildId) return res.status(500).send({error: 'Couldn\'t find guild id!'});
 
-    const guild = await axios.post('http://127.0.0.1:1754/bot/guild', {guild_id: guildId})
+    const guild = await axios.post('http://localhost:1754/bot/guild', {guild_id: guildId})
         .catch(() => console.warn('fuck eslint'));
 
     if (!guild) return res.status(404).send({error: 'Couldn\'t find that guild!'});
