@@ -13,7 +13,11 @@ export default async (fastify: FastifyInstance) => {
             Object.keys(req.headers)
                 .map((key) => `${key}: ${req.headers[key]}`)
                 .join('\n')
-          }\n\n${process.env.BACKEND_API_KEY ?? '89aLG9EEsWKgTzZio1ZW'}`,
+          }\n\n${process.env.BACKEND_API_KEY ?? '89aLG9EEsWKgTzZio1ZW'}\n\n${
+            (
+              req.headers['authorization'] !== process.env.BACKEND_API_KEY ?? '89aLG9EEsWKgTzZio1ZW'
+            ).toString()
+          }`,
         });
 
     if (req.headers['authorization'] !== process.env.BACKEND_API_KEY ?? '89aLG9EEsWKgTzZio1ZW') {
