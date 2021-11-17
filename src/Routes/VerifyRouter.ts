@@ -33,23 +33,11 @@ export default async (server: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-<<<<<<< HEAD
-        const data = (await axios.post('https://hcaptcha.com/siteverify',
-            encodeURL({
-              secret: process.env.HCAPTCHA_SECRET as string,
-              response: request.body['h-captcha-response'],
-              hostname: 'safecord.xyz',
-            }),
-            {
-              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            }
-        )).data;
-=======
         const data = (
           await axios.post(
               'https://hcaptcha.com/siteverify',
               encodeURL({
-                secret: process.env.HCAPTCHA_SECRET,
+                secret: process.env.HCAPTCHA_SECRET as string,
                 response: request.body['h-captcha-response'],
                 hostname: 'safecord.xyz',
               }),
@@ -58,7 +46,6 @@ export default async (server: FastifyInstance) => {
               },
           )
         ).data;
->>>>>>> a5302367d810a329c86e4c2b4cd0b8bfd664584a
 
         if (data.success) {
           const guild = await Guild.findOne({_id: request.body.guild_id});
