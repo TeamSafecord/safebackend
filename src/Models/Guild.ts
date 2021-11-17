@@ -14,6 +14,10 @@ const guildSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  verificationMessageId: {
+    type: String,
+    required: true,
+  },
 });
 
 export const Guild = mongoose.model<Guild>('guilds', guildSchema);

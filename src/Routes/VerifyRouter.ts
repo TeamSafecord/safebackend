@@ -3,8 +3,14 @@ import {FastifyInstance} from 'fastify';
 import {hCaptchaBody} from '../Interfaces/VerifyRouter';
 import {Guild} from '../Models/Guild';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function encodeURL(opts: any): string {
+interface URLData {
+  [key: string]: string
+  secret: string,
+  response: string,
+  hostname: string
+}
+
+function encodeURL(opts: URLData): string {
   return Object.keys(opts)
       .map((key) => `${key}=${encodeURIComponent(opts[key])}`)
       .join('&');
@@ -29,7 +35,7 @@ export default async (server: FastifyInstance) => {
       async (request, reply) => {
         const data = (await axios.post('https://hcaptcha.com/siteverify',
             encodeURL({
-              secret: process.env.HCAPTCHA_SECRET,
+              secret: process.env.HCAPTCHA_SECRET as string,
               response: request.body['h-captcha-response'],
               hostname: 'safecord.xyz',
             }),

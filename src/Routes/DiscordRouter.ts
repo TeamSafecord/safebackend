@@ -4,47 +4,13 @@ import {FastifyInstance} from 'fastify';
 import {URL} from '../Utils/Constants';
 import axios from 'axios';
 import Session from '../Models/Session';
-
-interface IQuerystring {
-  state: string;
-  code: string;
-}
-
-interface IAuthQuerystring {
-  redirect: string;
-}
-interface Guild {
-  id: string;
-  name: string;
-  owner: boolean;
-  permissions: string;
-}
-
-interface Details {
-  [key: string]: string;
-  client_id: string;
-  client_secret: string;
-  grant_type: string;
-  redirect_uri: string;
-  code: string;
-}
-
-type TokenResponse = {
-  access_token: string;
-  expires_in: number;
-  refresh_token: string;
-  scope: string;
-  token_type: string;
-};
-
-interface GuildId {
-  gid: string;
-}
+import {Guild} from '../Models/Guild';
+import * as Interfaces from '../Interfaces/DiscordRouter';
 
 const redirects = new Map<string, string>();
 
 export default async (server: FastifyInstance) => {
-  server.get<{Querystring: IAuthQuerystring}>('/auth', async (request, reply) => {
+  server.get<{Querystring: Interfaces.IAuthQuerystring}>('/auth', async (request, reply) => {
     // Generate a cryptographically secure token and store it
     // in a cookie, then direct the user to discord
     const nonce = randomBytes(16).toString('base64');
@@ -58,7 +24,7 @@ export default async (server: FastifyInstance) => {
   });
 
   server.get<{
-    Querystring: IQuerystring;
+    Querystring: Interfaces.IQuerystring;
   }>('/redirect', async (request, reply) => {
     const session = request.cookies.session;
     const state = request.query.state?.toString();
@@ -71,7 +37,7 @@ export default async (server: FastifyInstance) => {
     const code = request.query.code;
     if (!code) return reply.redirect(URL);
 
-    const details: Details = {
+    const details: Interfaces.Details = {
       client_id: process.env.CLIENT_ID as string,
       client_secret: process.env.CLIENT_SECRET as string,
       grant_type: 'authorization_code',
@@ -105,7 +71,7 @@ export default async (server: FastifyInstance) => {
 
     const newSession = new Session({
       nonce,
-      accessToken: (res.data as unknown as TokenResponse).access_token,
+      accessToken: (res.data as unknown as Interfaces.TokenResponse).access_token,
     });
 
     await newSession.save();
@@ -150,7 +116,7 @@ export default async (server: FastifyInstance) => {
     if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
 
     const userGuilds = await axios
-        .get<Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+        .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
           headers: {
             Authorization: `Bearer ${doc.accessToken}`,
           },
@@ -158,7 +124,7 @@ export default async (server: FastifyInstance) => {
         .catch(() => console.warn('fuck eslint'));
 
     const botGuilds = await axios
-        .get<Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+        .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
           headers: {
             Authorization: `Bot ${process.env.BOT_TOKEN}`,
           },
@@ -184,7 +150,7 @@ export default async (server: FastifyInstance) => {
     return reply.status(200).send({mutualGuilds, rest});
   });
 
-  server.get<{Params: GuildId}>('/guilds/:gid', async (request, res) => {
+  server.get<{Params: Interfaces.GuildId}>('/guilds/:gid', async (request, res) => {
     const guildId = request.params.gid;
 
     if (!guildId) return res.status(500).send({error: 'Couldn\'t find guild id!'});
@@ -195,6 +161,32 @@ export default async (server: FastifyInstance) => {
     if (!guild) return res.status(404).send({error: 'Couldn\'t find that guild!'});
 
     return res.status(200).send({guild: guild.data.guild});
+  });
+
+  server.post<{Body: Interfaces.VerifiedBody}>('/isverified', async (req, res) => {
+    const userId = req.body.user_id;
+    const guildId = req.body.guild_id;
+    if (!guildId || !userId) return res.status(400).send({error: 'Incorrect body!'});
+
+    const gDoc = await Guild.findOne({_id: guildId});
+
+    if (!gDoc) return res.status(404).send({error: 'Could not find guild document!'});
+
+    const member = await axios.post<Interfaces.GuildMember>('http://localhost:1754/bot/member', {
+      guild_id: guildId,
+      member_id: userId,
+    }).catch(() => console.warn('fuck eslint'));
+
+    if (!member) return res.status(404).send({error: 'Could\'nt find member!'});
+
+    console.log(member.data);
+    console.log(gDoc.verificationRole);
+
+    if (!member.data.roles.includes(gDoc.verificationRole)) {
+      return res.status(200).send({verified: false});
+    } else {
+      return res.status(200).send({verified: true});
+    }
   });
 };
 
