@@ -173,17 +173,26 @@ export default async (server: FastifyInstance) => {
 
     if (!gDoc) return res.status(404).send({error: 'Could not find guild document!'});
 
-    const member = await axios.post<Interfaces.GuildMember>('http://localhost:1754/bot/member', {
-      guild_id: guildId,
-      member_id: userId,
-    }).catch(() => console.warn('fuck eslint'));
+    const response = await axios.post<Interfaces.VerifyResponse>(
+        'http://localhost:1754/bot/verified', {
+          guild_id: guildId,
+          member_id: userId,
+        }).catch(() => console.warn('fuck eslint'));
 
-    if (!member) return res.status(404).send({error: 'Could\'nt find member!'});
+    if (!response) {
+      return res.status(500).send({
+        error: 'Something went very wrong.. please report this in support.',
+      });
+    }
 
-    if (!member.data.roles.includes(gDoc.verificationRole)) {
-      return res.status(200).send({verified: false});
+    if (!response.data.member) {
+      return res.status(200).send({verified: false, guild: response.data.guild});
+    }
+
+    if (!response.data.member.roles.includes(gDoc.verificationRole)) {
+      return res.status(200).send({verified: false, guild: response.data.guild});
     } else {
-      return res.status(200).send({verified: true});
+      return res.status(200).send({verified: true, guild: response.data.guild});
     }
   });
 };

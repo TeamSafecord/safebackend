@@ -53,3 +53,14 @@ export interface GuildMember {
   avatarURL: null;
   displayAvatarURL: string;
 }
+
+export interface SimpleGuild {
+  avatar_url?: string;
+  guild_id: string;
+  name: string;
+}
+
+export interface VerifyResponse {
+  member?: GuildMember,
+  guild: SimpleGuild;
+}
