@@ -1,3 +1,3 @@
 export interface genCaptcha {
-    difficulty: number
+  difficulty: number;
 }

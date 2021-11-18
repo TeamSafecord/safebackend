@@ -1,3 +1,3 @@
 export interface guildParams {
-    id: string
+  id: string;
 }

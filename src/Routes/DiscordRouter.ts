@@ -56,14 +56,14 @@ export default async (server: FastifyInstance) => {
     formBody = formBody.join('&');
 
     const res = await axios
-        .post('https://discord.com/api/v9/oauth2/token', formBody, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        })
-        .catch(() => {
-          console.warn('fuck eslint');
-        });
+      .post('https://discord.com/api/v9/oauth2/token', formBody, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+      .catch(() => {
+        console.warn('fuck eslint');
+      });
 
     if (!res) return reply.redirect(URL);
 
@@ -92,15 +92,15 @@ export default async (server: FastifyInstance) => {
     if (!token) return reply.status(404).send({error: 'Missing token!'});
 
     const doc = await Session.findOne({nonce: token});
-    if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
+    if (!doc) return reply.status(403).send({error: "User doesn't have a valid token!"});
 
     const res = await axios
-        .get('https://discord.com/api/v9/users/@me', {
-          headers: {
-            Authorization: `Bearer ${doc.accessToken}`,
-          },
-        })
-        .catch(() => console.log('fuck eslint'));
+      .get('https://discord.com/api/v9/users/@me', {
+        headers: {
+          Authorization: `Bearer ${doc.accessToken}`,
+        },
+      })
+      .catch(() => console.log('fuck eslint'));
 
     if (!res) return reply.status(401).send({error: 'Invalid Token!'});
 
@@ -113,23 +113,23 @@ export default async (server: FastifyInstance) => {
     if (!token) return reply.status(404).send({error: 'Missing token!'});
 
     const doc = await Session.findOne({nonce: token});
-    if (!doc) return reply.status(403).send({error: 'User doesn\'t have a valid token!'});
+    if (!doc) return reply.status(403).send({error: "User doesn't have a valid token!"});
 
     const userGuilds = await axios
-        .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
-          headers: {
-            Authorization: `Bearer ${doc.accessToken}`,
-          },
-        })
-        .catch(() => console.warn('fuck eslint'));
+      .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+        headers: {
+          Authorization: `Bearer ${doc.accessToken}`,
+        },
+      })
+      .catch(() => console.warn('fuck eslint'));
 
     const botGuilds = await axios
-        .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
-          headers: {
-            Authorization: `Bot ${process.env.BOT_TOKEN}`,
-          },
-        })
-        .catch(() => console.log('fuck eslint'));
+      .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+        headers: {
+          Authorization: `Bot ${process.env.BOT_TOKEN}`,
+        },
+      })
+      .catch(() => console.log('fuck eslint'));
 
     if (!userGuilds) return reply.status(401).send({error: 'Invalid Token!'});
     if (!botGuilds) return reply.status(500).send({error: 'Cannot fetch bot guilds!'});
@@ -137,7 +137,7 @@ export default async (server: FastifyInstance) => {
     const ids = botGuilds.data.map((g) => g.id);
 
     const usableGuilds = userGuilds.data.filter(
-        (g) => (BigInt(g.permissions) & BigInt(1 << 5)) === BigInt(1 << 5),
+      (g) => (BigInt(g.permissions) & BigInt(1 << 5)) === BigInt(1 << 5),
     );
 
     const mutualGuilds = usableGuilds.filter((g) => ids.includes(g.id));
@@ -153,13 +153,13 @@ export default async (server: FastifyInstance) => {
   server.get<{Params: Interfaces.GuildId}>('/guilds/:gid', async (request, res) => {
     const guildId = request.params.gid;
 
-    if (!guildId) return res.status(500).send({error: 'Couldn\'t find guild id!'});
+    if (!guildId) return res.status(500).send({error: "Couldn't find guild id!"});
 
     const guild = await axios
-        .post('http://127.0.0.1:1754/bot/guild', {guild_id: guildId})
-        .catch(() => console.warn('fuck eslint'));
+      .post('http://127.0.0.1:1754/bot/guild', {guild_id: guildId})
+      .catch(() => console.warn('fuck eslint'));
 
-    if (!guild) return res.status(404).send({error: 'Couldn\'t find that guild!'});
+    if (!guild) return res.status(404).send({error: "Couldn't find that guild!"});
 
     return res.status(200).send({guild: guild.data.guild});
   });
@@ -173,11 +173,12 @@ export default async (server: FastifyInstance) => {
 
     if (!gDoc) return res.status(404).send({error: 'Could not find guild document!'});
 
-    const response = await axios.post<Interfaces.VerifyResponse>(
-        'http://localhost:1754/bot/verified', {
-          guild_id: guildId,
-          member_id: userId,
-        }).catch(() => console.warn('fuck eslint'));
+    const response = await axios
+      .post<Interfaces.VerifyResponse>('http://localhost:1754/bot/verified', {
+        guild_id: guildId,
+        member_id: userId,
+      })
+      .catch(() => console.warn('fuck eslint'));
 
     if (!response) {
       return res.status(500).send({

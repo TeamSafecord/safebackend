@@ -33,12 +33,14 @@ server.listen(process.env.PORT ?? 3000, '0.0.0.0', async (err, address) => {
   if (process.env.MODE !== 'DEV') {
     // eslint-disable-next-line
     void axios.post('https://discord.com/api/webhooks/909681201500024832/eKlEapA_3mfKQzoV31qZnvR_VxxR4VRW1KiVkZrbD_WAkmXLE_uF76A_hAQK6SVpf5OE', {
-      content: 'Launched on server!',
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
+        content: 'Launched on server!',
       },
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
   }
 
   console.log(`Listening on ${address}`);

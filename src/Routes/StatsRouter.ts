@@ -19,7 +19,7 @@ export default async (server: FastifyInstance) => {
         });
         let guildNum;
 
-        if (typeof result[0].guilds == 'undefined') {
+        if (typeof result[0].guilds === 'undefined') {
           guildNum = 0;
         } else {
           guildNum = result[0].guilds;
@@ -44,16 +44,16 @@ export default async (server: FastifyInstance) => {
       try {
         try {
           await sModel.findOneAndUpdate(
-              {
-                botID: '908904270978494514',
-              },
-              {
-                guilds: request.body?.guilds ?? 0,
-              },
-              {
-                upsert: true,
-                new: true,
-              },
+            {
+              botID: '908904270978494514',
+            },
+            {
+              guilds: request.body?.guilds ?? 0,
+            },
+            {
+              upsert: true,
+              new: true,
+            },
           );
         } catch (error) {
           console.trace(error);

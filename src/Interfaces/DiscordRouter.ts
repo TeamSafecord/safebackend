@@ -61,6 +61,6 @@ export interface SimpleGuild {
 }
 
 export interface VerifyResponse {
-  member?: GuildMember,
+  member?: GuildMember;
   guild: SimpleGuild;
 }
