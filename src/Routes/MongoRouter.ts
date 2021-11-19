@@ -18,6 +18,19 @@ export default async (fastify: FastifyInstance) => {
       reply.send({success: true, guild});
     });
   });
+
+  fastify.get<{Params: guildParams}>('/guilds/:id', async (req, res) => {
+    if (req.headers['authorization'] !== '89aLG9EEsWKgTzZio1ZW') {
+      return res.code(401).send({
+        error: 'Unauthorized',
+      });
+    }
+
+    const guild = await Guild.findOne({_id: req.params.id});
+
+    if (guild) return res.status(200).send({guild});
+    else return res.status(404).send({error: 'Could not find guild!'});
+  });
 };
 
 export const autoPrefix = '/mongo';
