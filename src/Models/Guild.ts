@@ -18,6 +18,12 @@ const guildSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  verificationEmbed: {
+    title: String,
+    description: String,
+    footer: String,
+    color: String,
+  },
 });
 
 export const Guild = mongoose.model<Guild>('guilds', guildSchema);
