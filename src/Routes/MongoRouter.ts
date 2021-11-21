@@ -4,7 +4,7 @@ import {Guild} from '../Models/Guild';
 
 export default async (fastify: FastifyInstance) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fastify.patch<{Params: guildParams; Body: any}>('/guild/:id', async (req, reply) => {
+  fastify.patch<{Params: guildParams; Body: any}>('/guilds/:id', async (req, reply) => {
     if (req.headers['authorization'] !== '89aLG9EEsWKgTzZio1ZW') {
       return reply.code(401).send({
         error: 'Unauthorized',
