@@ -21,7 +21,7 @@ server.register(fastifyCookie, {
 });
 
 server.register(fastifyCors, {
-  origin: 'https://www.safecord.xyz',
+  origin: process.env.DEV ? 'http://localhost:3050' : 'https://www.safecord.xyz',
   credentials: true,
 });
 
