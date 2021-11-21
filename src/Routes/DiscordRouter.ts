@@ -164,7 +164,7 @@ export default async (server: FastifyInstance) => {
     return res.status(200).send({guild: guild.data.guild});
   });
 
-  server.post<{Body: Interfaces.VerifiedBody}>('/isverified', async (req, res) => {
+  server.post<{Body: Interfaces.VerifiedBody}>('/verification', async (req, res) => {
     const userId = req.body.user_id;
     const guildId = req.body.guild_id;
     if (!guildId || !userId) return res.status(400).send({error: 'Incorrect body!'});
