@@ -150,18 +150,46 @@ export default async (server: FastifyInstance) => {
     return reply.status(200).send({mutualGuilds, rest});
   });
 
-  server.get<{Params: Interfaces.GuildId}>('/guilds/:gid', async (request, res) => {
-    const guildId = request.params.gid;
+  server.get<{Params: Interfaces.GuildId}>('/guilds/:gid', async (req, res) => {
+    const guildId = req.params.gid;
 
     if (!guildId) return res.status(500).send({error: "Couldn't find guild id!"});
 
-    const guild = await axios
-      .post('http://127.0.0.1:1754/bot/guild', {guild_id: guildId})
+    const token = req.cookies.access;
+
+    if (!token) return res.status(404).send({error: 'Missing token!'});
+
+    const doc = await Session.findOne({nonce: token});
+    if (!doc) return res.status(403).send({error: "User doesn't have a valid token!"});
+
+    const userGuilds = await axios
+      .get<Interfaces.Guild[]>('https://discord.com/api/v9/users/@me/guilds', {
+        headers: {
+          Authorization: `Bearer ${doc.accessToken}`,
+        },
+      })
       .catch(() => console.warn('fuck eslint'));
 
-    if (!guild) return res.status(404).send({error: "Couldn't find that guild!"});
+    if (!userGuilds) return res.status(401).send({error: 'Could not query guilds!'});
 
-    return res.status(200).send({guild: guild.data.guild});
+    const usableGuilds = userGuilds.data.filter(
+      (g) => (BigInt(g.permissions) & BigInt(1 << 5)) === BigInt(1 << 5),
+    );
+
+    if (!usableGuilds.some((g) => g.id === guildId))
+      return res.status(401).send({error: "Unauthorized / guild doesn't exist"});
+
+    const guildDoc = await Guild.findOne({_id: guildId});
+
+    if (!guildDoc) return res.status(500).send({error: 'Could not find guild id!'});
+
+    // const guild = await axios
+    //   .post('http://127.0.0.1:1754/bot/guild', {guild_id: guildId})
+    //   .catch(() => console.warn('fuck eslint'));
+
+    // if (!guild) return res.status(404).send({error: "Couldn't find that guild!"});
+
+    return res.status(200).send({guild: guildDoc});
   });
 
   server.post<{Body: Interfaces.VerifiedBody}>('/verification', async (req, res) => {
