@@ -19,7 +19,9 @@ const sessionSchema = new mongoose.Schema({
   guilds: Array,
   expires_at: {
     type: Date,
-    default: Date.now,
+    default: function () {
+      return Date.now() + 1000 * 60 * 60 * 2;
+    },
     expires: 7200,
   },
 });
