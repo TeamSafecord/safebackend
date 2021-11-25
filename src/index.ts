@@ -55,7 +55,7 @@ server.redis.on('connect', () => {
     for (const session of sessions) {
       const ttl = (new Date(session.expires_at).getTime() - Date.now()) / 1000;
 
-      server.redis.set(session.nonce, JSON.stringify(session), 'EX', ttl.toFixed(0));
+      server.redis.set(session.nonce, JSON.stringify(session), 'EX', Math.round(ttl));
     }
   });
 });
