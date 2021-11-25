@@ -7,7 +7,7 @@ interface Guild {
   permissions: string;
 }
 
-interface Session {
+export interface Session {
   nonce: string;
   accessToken: string;
   guilds: Guild[];
@@ -26,4 +26,5 @@ const sessionSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Sessions || mongoose.model<Session>('Sessions', sessionSchema);
+export const Session =
+  mongoose.models.Sessions || mongoose.model<Session>('Sessions', sessionSchema);
