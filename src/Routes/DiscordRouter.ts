@@ -3,7 +3,7 @@ import {FastifyInstance} from 'fastify';
 
 import {URL} from '../Utils/Constants';
 import axios from 'axios';
-import Session from '../Models/Session';
+import {Session} from '../Models/Session';
 import {Guild} from '../Models/Guild';
 import * as Interfaces from '../Interfaces/DiscordRouter';
 
@@ -75,6 +75,12 @@ export default async (server: FastifyInstance) => {
     });
 
     await newSession.save();
+    server.redis.set(
+      nonce,
+      JSON.stringify(newSession),
+      'EX',
+      ((Date.now() + 1000 * 60 * 60 * 2) / 1000).toFixed(0),
+    );
 
     reply.setCookie('access', nonce, {
       domain: 'safecord.xyz',
@@ -91,7 +97,11 @@ export default async (server: FastifyInstance) => {
 
     if (!token) return reply.status(404).send({error: 'Missing token!'});
 
-    const doc = await Session.findOne({nonce: token});
+    const redisResponse = await server.redis.get(token);
+    const doc: Session = redisResponse
+      ? JSON.parse(redisResponse)
+      : await Session.findOne({nonce: token});
+
     if (!doc) return reply.status(403).send({error: "User doesn't have a valid token!"});
 
     const res = await axios
@@ -112,7 +122,11 @@ export default async (server: FastifyInstance) => {
 
     if (!token) return reply.status(404).send({error: 'Missing token!'});
 
-    const doc = await Session.findOne({nonce: token});
+    const redisResponse = await server.redis.get(token);
+    const doc: Session = redisResponse
+      ? JSON.parse(redisResponse)
+      : await Session.findOne({nonce: token});
+
     if (!doc) return reply.status(403).send({error: "User doesn't have a valid token!"});
 
     const userGuilds = await axios
@@ -143,9 +157,11 @@ export default async (server: FastifyInstance) => {
     const mutualGuilds = usableGuilds.filter((g) => ids.includes(g.id));
     const rest = usableGuilds.filter((g) => !ids.includes(g.id));
 
-    doc.guilds = mutualGuilds;
-    doc.markModified('guilds');
-    await doc.save();
+    Session.findOneAndUpdate({nonce: token}, {$set: {guilds: mutualGuilds}}, {new: true}).then(
+      (doc) => {
+        server.redis.set(token, JSON.stringify(doc));
+      },
+    );
 
     return reply.status(200).send({mutualGuilds, rest});
   });
@@ -159,7 +175,11 @@ export default async (server: FastifyInstance) => {
 
     if (!token) return res.status(404).send({error: 'Missing token!'});
 
-    const doc = await Session.findOne({nonce: token});
+    const redisResponse = await server.redis.get(token);
+    const doc: Session = redisResponse
+      ? JSON.parse(redisResponse)
+      : await Session.findOne({nonce: token});
+
     if (!doc) return res.status(403).send({error: "User doesn't have a valid token!"});
 
     const userGuilds = await axios
@@ -179,7 +199,10 @@ export default async (server: FastifyInstance) => {
     if (!usableGuilds.some((g) => g.id === guildId))
       return res.status(401).send({error: "Unauthorized / guild doesn't exist"});
 
-    const guildDoc = await Guild.findOne({_id: guildId});
+    const guildRedisResponse = await server.redis.get(guildId);
+    const guildDoc: Guild = guildRedisResponse
+      ? JSON.parse(guildRedisResponse)
+      : await Guild.findOne({_id: guildId});
 
     if (!guildDoc) return res.status(500).send({error: 'Could not find guild id!'});
 
@@ -197,7 +220,8 @@ export default async (server: FastifyInstance) => {
     const guildId = req.body.guild_id;
     if (!guildId || !userId) return res.status(400).send({error: 'Incorrect body!'});
 
-    const gDoc = await Guild.findOne({_id: guildId});
+    const redisResponse = await server.redis.get(guildId);
+    const gDoc = redisResponse ? JSON.parse(redisResponse) : await Guild.findOne({_id: guildId});
 
     if (!gDoc) return res.status(404).send({error: 'Could not find guild document!'});
 
